@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+drizzle/meta/
+
+# Session cookies from curl tests — never commit
+*_cookies.txt
+cookies.txt
