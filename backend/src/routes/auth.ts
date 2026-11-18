@@ -47,8 +47,8 @@ authRoutes.post('/login', async (c) => {
   // 4. Set httpOnly cookie
   setCookie(c, 'session', token, {
     httpOnly: true,
-    secure: false, // Set to true in production (HTTPS)
-    sameSite: 'Lax',
+   secure: true,
+sameSite: 'None',
     maxAge: 60 * 60 * 24 * 7, // 1 week
     path: '/',
   });
