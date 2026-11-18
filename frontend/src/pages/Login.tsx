@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../lib/api';
 
 export function Login() {
   const [username, setUsername] = useState('');
@@ -11,31 +12,36 @@ export function Login() {
     e.preventDefault();
     setError('');
     
-    const loginRes = await fetch('/api/auth/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }), credentials: 'include',
-    });
+    try {
+      const data = await apiFetch<{ user: { role: string } }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (!loginRes.ok) { setError('Invalid username or password'); return; }
+      const role = data.user.role;
+      localStorage.setItem('userRole', role);
 
-    const loginData = await loginRes.json();
-    const role = loginData.user.role;
-    
-    // Store role for the layout to read
-    localStorage.setItem('userRole', role);
+      if (role === 'facilitator') {
+        navigate('/admin/reports');
+        return;
+      }
 
-    if (role === 'facilitator') {
-      navigate('/admin/reports');
-      return;
+      const leaderRoles = ['secretary', 'treasurer', 'prayer-sec', 'dad', 'mum', 'os'];
+      if (leaderRoles.includes(role)) {
+        try {
+          await apiFetch('/people/search?q=test');
+        } catch (err: any) {
+          if (err.message.includes('ONBOARDING_REQUIRED')) {
+            navigate('/onboarding'); 
+            return;
+          }
+        }
+      }
+
+      navigate('/admin');
+    } catch (err: any) {
+      setError(err.message || 'Invalid username or password');
     }
-
-    const leaderRoles = ['secretary', 'treasurer', 'prayer-sec', 'dad', 'mum', 'os'];
-    if (leaderRoles.includes(role)) {
-      const checkRes = await fetch('/api/people/search?q=test', { credentials: 'include' });
-      if (checkRes.status === 403) { navigate('/onboarding'); return; }
-    }
-
-    navigate('/admin');
   };
 
   return (
