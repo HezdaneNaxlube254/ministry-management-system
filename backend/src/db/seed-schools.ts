@@ -1,11 +1,15 @@
-import dotenv from 'dotenv'; dotenv.config({ path: 'backend/.env' });
+import dotenv from 'dotenv';
+dotenv.config({ path: 'backend/.env' });
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { schools, categories } from './schema';
 
-const db = drizzle(neon(process.env.DATABASE_URL!));
+const url = process.env.DATABASE_URL;
+if (!url) { console.error('DATABASE_URL missing'); process.exit(1); }
 
 async function seed() {
+  const db = drizzle(neon(url!));
+  
   await db.insert(schools).values([
     { name: 'Kamulu Secondary', code: 'kamulu-sec' },
     { name: 'Mwangaza High', code: 'mwangaza-high' },

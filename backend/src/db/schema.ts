@@ -14,7 +14,7 @@ export const accounts = pgTable('accounts', {
 
 export const sessions = pgTable('sessions', {
   id: serial('id').primaryKey(),
-  accountId: integer('account_id').notNull().references(() => accounts.id),
+  accountId: integer('account_id').notNull().references(() => accounts.id, { onDelete: 'cascade' }),
   tokenHash: text('token_hash').notNull().unique(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
