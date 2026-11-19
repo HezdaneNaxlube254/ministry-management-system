@@ -17,14 +17,18 @@ treasuryRoutes.get('/categories', async (c) => {
 treasuryRoutes.post('/categories', async (c) => {
   const body = await c.req.json();
   const db = getDb();
-  const [cat] = await db.insert(categories).values({ name: body.name, fieldLabel: body.fieldLabel || null }).onConflictDoNothing().returning();
+  const [cat] = await db
+    .insert(categories)
+    .values({ name: body.name, fieldLabel: body.fieldLabel || null })
+    .onConflictDoNothing()
+    .returning();
   return c.json({ category: cat }, 201);
 });
 
 treasuryRoutes.post('/', async (c) => {
   const body = await c.req.json();
   const db = getDb();
-  
+
   const [tx] = await db.insert(transactions).values({
     type: body.type,
     amount: body.amount,
@@ -34,6 +38,10 @@ treasuryRoutes.post('/', async (c) => {
     schoolId: body.schoolId || null,
     venue: body.venue || null,
     dynamicField: body.dynamicField || null,
+    reference: body.reference || null,
+    counterparty: body.counterparty || null,
+    parentTransactionId: body.parentTransactionId || null,
+    isBalanceMarker: body.isBalanceMarker || false,
     date: new Date(body.date),
   }).returning();
 
@@ -53,12 +61,12 @@ treasuryRoutes.put('/:id', async (c) => {
   const id = Number(c.req.param('id'));
   const db = getDb();
   const [existing] = await db.select().from(transactions).where(eq(transactions.id, id));
-  
+
   if (!existing) return c.json({ error: 'Not found' }, 404);
   if (policy.isLocked({ department: 'treasury', createdAt: existing.createdAt })) {
     return c.json({ error: 'LOCKED: Cannot edit after 24 hours. Ask the Chair.' }, 403);
   }
-  
+
   const body = await c.req.json();
   const [updated] = await db.update(transactions).set({
     type: body.type,
@@ -69,6 +77,10 @@ treasuryRoutes.put('/:id', async (c) => {
     schoolId: body.schoolId || null,
     venue: body.venue || null,
     dynamicField: body.dynamicField || null,
+    reference: body.reference || null,
+    counterparty: body.counterparty || null,
+    parentTransactionId: body.parentTransactionId || null,
+    isBalanceMarker: body.isBalanceMarker || false,
     date: new Date(body.date),
   }).where(eq(transactions.id, id)).returning();
 
@@ -81,14 +93,14 @@ treasuryRoutes.put('/:id', async (c) => {
     }));
     await db.insert(transactionItems).values(itemsToInsert);
   }
-  
+
   return c.json({ transaction: updated });
 });
 
 treasuryRoutes.get('/', async (c) => {
   const db = getDb();
   const txs = await db.select().from(transactions).orderBy(desc(transactions.date));
-  
+
   if (txs.length === 0) return c.json({ transactions: [] });
 
   const txIds = txs.map(t => t.id);
