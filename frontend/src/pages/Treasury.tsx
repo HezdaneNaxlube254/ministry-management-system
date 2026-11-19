@@ -148,7 +148,7 @@ export function Treasury() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:block">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:block overflow-hidden">
         {/* FORM */}
         <div className={`bg-white p-6 rounded-lg shadow print:hidden ${editingId ? 'ring-2 ring-blue-500' : ''}`}>
           <h2 className="text-xl font-bold mb-4">{editingId ? 'Editing Transaction' : 'Record Transaction'}</h2>
@@ -293,8 +293,8 @@ export function Treasury() {
             <div className="flex-1"><span className="text-xs text-gray-500 block">Balance</span><span className="font-bold text-blue-600">{balance.toLocaleString()}</span></div>
           </div>
 
-          <div className="max-h-96 overflow-y-auto">
-            <table className="w-full text-left text-sm">
+          <div className="max-h-96 overflow-auto">
+            <table className="w-full text-left text-sm min-w-[700px]">
               <thead>
                 <tr className="border-b bg-gray-50">
                   <th className="p-2">Date</th>
