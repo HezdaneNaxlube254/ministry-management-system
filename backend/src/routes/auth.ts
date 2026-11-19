@@ -6,8 +6,10 @@ import { NodeHasher } from '../lib/password';
 import { generateSessionToken, hashSessionToken } from '../lib/session';
 import { getDb } from '../db/client';
 import { accounts, sessions } from '../db/schema';
+import { AppEnv } from '../types';
+import { requireSession } from '../middleware/auth';
 
-export const authRoutes = new Hono();
+export const authRoutes = new Hono<AppEnv>();
 const hasher = new NodeHasher();
 
 authRoutes.post('/login', async (c) => {
@@ -18,23 +20,18 @@ authRoutes.post('/login', async (c) => {
   const { username, password } = parsed.data;
   const db = getDb();
 
-  // 1. Find account in Neon
   const [account] = await db.select().from(accounts).where(eq(accounts.username, username)).limit(1);
 
-  // Generic error message to prevent username enumeration
   if (!account || !account.isActive) {
     return c.json({ error: 'Invalid username or password' }, 401);
   }
 
-  // 2. Verify password
   const valid = await hasher.verify(password, account.passwordHash);
   if (!valid) return c.json({ error: 'Invalid username or password' }, 401);
 
-  // 3. Create session
   const token = generateSessionToken();
   const tokenHash = hashSessionToken(token);
   
-  // Set expiration to 7 days from now
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 7);
 
@@ -44,12 +41,11 @@ authRoutes.post('/login', async (c) => {
     expiresAt,
   });
 
-  // 4. Set httpOnly cookie
   setCookie(c, 'session', token, {
     httpOnly: true,
-   secure: true,
-sameSite: 'None',
-    maxAge: 60 * 60 * 24 * 7, // 1 week
+    secure: true,
+    sameSite: 'None',
+    maxAge: 60 * 60 * 24 * 7,
     path: '/',
   });
 
@@ -64,8 +60,6 @@ authRoutes.post('/logout', async (c) => {
   if (token) {
     const db = getDb();
     const tokenHash = hashSessionToken(token);
-    // In a real app, we might just delete the session row.
-    // For audit purposes, we could mark it inactive, but delete is fine here.
     await db.delete(sessions).where(eq(sessions.tokenHash, tokenHash));
   }
   deleteCookie(c, 'session', { path: '/' });
@@ -79,7 +73,6 @@ authRoutes.get('/me', async (c) => {
   const db = getDb();
   const tokenHash = hashSessionToken(token);
 
-  // Join sessions and accounts to get the user
   const [session] = await db.select({
     accountId: accounts.id,
     username: accounts.username,
@@ -93,4 +86,30 @@ authRoutes.get('/me', async (c) => {
   if (!session) return c.json({ error: 'Unauthorized' }, 401);
 
   return c.json({ user: session });
+});
+
+// NEW: Change Password Route
+authRoutes.post('/change-password', requireSession, async (c) => {
+  const accountId = c.get('accountId');
+  const body = await c.req.json();
+  
+  if (!body.oldPassword || !body.newPassword || body.newPassword.length < 6) {
+    return c.json({ error: 'Invalid passwords. New password must be at least 6 characters.' }, 400);
+  }
+
+  const db = getDb();
+  const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId));
+
+  if (!account) return c.json({ error: 'Account not found' }, 404);
+
+  const valid = await hasher.verify(body.oldPassword, account.passwordHash);
+  if (!valid) return c.json({ error: 'Current password is incorrect' }, 401);
+
+  const newHash = await hasher.hash(body.newPassword);
+  await db.update(accounts).set({ 
+    passwordHash: newHash, 
+    mustChangePassword: false 
+  }).where(eq(accounts.id, accountId));
+
+  return c.json({ message: 'Password updated successfully' });
 });

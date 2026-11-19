@@ -36,6 +36,13 @@
       "when": 1795086902201,
       "tag": "0004_bright_liz_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795109978512,
+      "tag": "0005_aromatic_queen_noir",
+      "breakpoints": true
     }
   ]
 }

@@ -31,7 +31,7 @@ export const people = pgTable('people', {
 
 export const targets = pgTable('targets', {
   id: serial('id').primaryKey(),
-  accountId: integer('account_id').notNull().references(() => accounts.id),
+  accountId: integer('account_id').notNull().references(() => accounts.id, { onDelete: 'cascade' }),
   termId: integer('term_id').default(1).notNull(),
   metricName: text('metric_name').notNull(),
   targetValue: numeric('target_value').notNull(),
@@ -49,6 +49,14 @@ export const categories = pgTable('categories', {
   id: serial('id').primaryKey(),
   name: text('name').notNull().unique(),
   fieldLabel: text('field_label'),
+});
+
+export const terms = pgTable('terms', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  openingBalance: integer('opening_balance').default(0).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const ministrationReports = pgTable('ministration_reports', {
@@ -75,6 +83,10 @@ export const transactions = pgTable('transactions', {
   schoolId: integer('school_id').references(() => schools.id),
   venue: text('venue'),
   dynamicField: text('dynamic_field'),
+  reference: text('reference'),
+  counterparty: text('counterparty'),
+  parentTransactionId: integer('parent_transaction_id'),
+  isBalanceMarker: boolean('is_balance_marker').default(false).notNull(),
   date: timestamp('date', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
