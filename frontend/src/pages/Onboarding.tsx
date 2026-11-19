@@ -31,7 +31,7 @@ export function Onboarding() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-10">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-lg">
+      <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-lg shadow-md w-full max-w-lg mx-4">
         <h1 className="text-2xl font-bold mb-2 text-center">Set Your Department Targets</h1>
         <p className="text-gray-600 mb-6 text-center">You must set at least 3 targets for this term before you can access the system.</p>
         

@@ -46,7 +46,7 @@ export function Login() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-lg shadow-md w-96">
+      <form onSubmit={handleLogin} className="bg-white p-6 sm:p-8 rounded-lg shadow-md w-full max-w-sm mx-4">
         <h1 className="text-2xl font-bold mb-6 text-center">Ministry System</h1>
         {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-3 border rounded-md mb-4" required />

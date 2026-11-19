@@ -82,7 +82,7 @@ export function ChairAdmin() {
       </div>
 
       {tab === 'accounts' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
           <div>
             <h3 className="font-bold mb-3">Create Account</h3>
             <form onSubmit={handleCreateAccount} className="space-y-3 bg-gray-50 p-4 rounded">
@@ -103,7 +103,7 @@ export function ChairAdmin() {
           </div>
           <div>
             <h3 className="font-bold mb-3">All Accounts ({accounts.length})</h3>
-            <div className="max-h-96 overflow-y-auto border rounded">
+            <div className="max-h-96 overflow-auto border rounded">
               <table className="w-full text-sm">
                 <thead className="bg-gray-100 sticky top-0">
                   <tr>
@@ -133,7 +133,7 @@ export function ChairAdmin() {
       )}
 
       {tab === 'schools' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
           <div>
             <h3 className="font-bold mb-3">Add School</h3>
             <form onSubmit={handleCreateSchool} className="space-y-3 bg-gray-50 p-4 rounded">
@@ -162,7 +162,7 @@ export function ChairAdmin() {
           {pendingTargets.length === 0 ? (
             <p className="text-gray-500">No pending approvals.</p>
           ) : (
-            <table className="w-full text-sm border">
+            <table className="w-full text-sm border min-w-[600px]">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="p-2 text-left">Account ID</th>
